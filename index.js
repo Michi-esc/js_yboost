@@ -10,13 +10,8 @@ const PORT = 3003;
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 
-// Route principale
-app.get('/', (req, res) => {
-    res.send('<h3>Hello, YScalingo with NodeJS !</h3>');
-});
-
 // Page cartes Pokémon
-app.get('/pokemons', (req, res) => {
+app.get('/', (req, res) => {
     let html = `
     <!DOCTYPE html>
     <html lang="FR">
@@ -183,6 +178,19 @@ app.get('/api/pokemons', (req, res) => {
 });
 
 app.get('/api/pokemons/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const pokemon = pokemons.find( pokemon => pokemon.id === id );
+    const message = "One pokemon is founded !";
+    res.json( helper.success(message, pokemon) );
+});
+
+// Routes pour /pokemon (API base)
+app.get('/pokemon', (req, res) => {
+    const message = `List of ${pokemons.length} pokemons`;
+    res.json( helper.success(message, pokemons) );    
+});
+
+app.get('/pokemon/:id', (req, res) => {
     const id = parseInt(req.params.id);
     const pokemon = pokemons.find( pokemon => pokemon.id === id );
     const message = "One pokemon is founded !";
