@@ -9,6 +9,7 @@ const PORT = 3003;
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // Page cartes Pokémon
 app.get('/', (req, res) => {
@@ -119,6 +120,26 @@ app.get('/', (req, res) => {
             .see-details:hover {
                 transform: scale(1.05);
             }
+            .pokemon-actions {
+                display: flex;
+                gap: 10px;
+                margin-top: 15px;
+            }
+            .btn-delete {
+                flex: 1;
+                background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+                color: white;
+                padding: 8px 15px;
+                border: none;
+                border-radius: 20px;
+                font-weight: bold;
+                cursor: pointer;
+                font-size: 0.85em;
+                transition: transform 0.2s ease;
+            }
+            .btn-delete:hover {
+                transform: scale(1.05);
+            }
         </style>
     </head>
     <body>
@@ -142,6 +163,29 @@ app.get('/', (req, res) => {
             </div>
             <div class="pokemon-grid">
     `;
+    
+    html += `
+        <script>
+            function deletePokemon(id, name) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer ' + name + ' ?')) {
+                    fetch('/pokemon/' + id, {
+                        method: 'DELETE'
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            alert('Erreur lors de la suppression');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de la suppression');
+                    });
+                }
+            }
+        </script>
+    `;
 
     pokemons.forEach(pokemon => {
         html += `
@@ -155,7 +199,10 @@ app.get('/', (req, res) => {
                         <div class="pokemon-types">
                             ${pokemon.types.map(type => `<span class="type-badge">${type}</span>`).join('')}
                         </div>
-                        <a href="/api/pokemons/${pokemon.id}" class="see-details">Voir Les Détails</a>
+                        <div class="pokemon-actions">
+                            <a href="/api/pokemons/${pokemon.id}" class="see-details">Détails</a>
+                            <button class="btn-delete" onclick="deletePokemon(${pokemon.id}, '${pokemon.name}')">Supprimer</button>
+                        </div>
                     </div>
                 </div>
         `;
@@ -195,6 +242,20 @@ app.get('/pokemon/:id', (req, res) => {
     const pokemon = pokemons.find( pokemon => pokemon.id === id );
     const message = "One pokemon is founded !";
     res.json( helper.success(message, pokemon) );
+});
+
+// Route DELETE pour supprimer un Pokémon
+app.delete('/pokemon/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = pokemons.findIndex( pokemon => pokemon.id === id );
+    
+    if (index === -1) {
+        return res.status(404).json( helper.success('Pokémon non trouvé', null) );
+    }
+    
+    const deletedPokemon = pokemons.splice(index, 1);
+    const message = `Pokémon '${deletedPokemon[0].name}' supprimé avec succès`;
+    res.json( helper.success(message, deletedPokemon[0]) );
 });
 
 // Route pour afficher le formulaire d'ajout
@@ -346,9 +407,9 @@ app.post('/api/add-pokemon', (req, res) => {
     // Ajouter à la liste en mémoire
     pokemons.push(newPokemon);
 
-    // Écrire dans db-pokemons.js
-    const pokemonsContent = 'const pokemons = ' + JSON.stringify(pokemons, null, 2) + '\n\nmodule.exports = pokemons;';
-    fs.writeFileSync(path.join(__dirname, 'db-pokemons.js'), pokemonsContent);
+    // Note: Sur Vercel, le système de fichiers est read-only
+    // Les données persisteront en mémoire jusqu'au redéploiement
+    // Pour une persistance réelle, utiliser une base de données
 
     // Redirection vers la page des Pokémon
     res.redirect('/pokemons');
