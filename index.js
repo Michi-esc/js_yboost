@@ -411,7 +411,7 @@ app.post('/api/add-pokemon', (req, res) => {
     // Les données persisteront en mémoire jusqu'au redéploiement
     // Pour une persistance réelle, utiliser une base de données
 
-    // Redirection vers la page des Pokémon
+    // Redirection vers la page d'accueil
     res.redirect('/pokemons');
 });
 
