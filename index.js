@@ -412,7 +412,7 @@ app.post('/api/add-pokemon', (req, res) => {
     // Pour une persistance réelle, utiliser une base de données
 
     // Redirection vers la page d'accueil
-    res.redirect('/pokemons');
+    res.redirect('/');
 });
 
 // Lancement du serveur
